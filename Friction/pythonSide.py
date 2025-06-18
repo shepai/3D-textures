@@ -21,16 +21,16 @@ def get_reading(timeout=0.5):
 def run_trial():
     t=time.time()
     force_readings=[]
-    for i in range(15): #push forward to reset 
+    for i in range(35): #push forward to reset 
         ser.write(b'w')
-        time.sleep(0.05)
-        data=get_reading()
+        #data=get_reading()
+        time.sleep(0.5)
     print("Ready...")
-    time.sleep(3)
+    input(">")
     forces=[]
     time_stamps=[]
     print("Recording...")
-    for i in range(15):
+    for i in range(35):
         ser.write(b's')
         data=get_reading()
         force_readings.append(data)
@@ -57,17 +57,19 @@ def process_data(force_readings):
     print(f"Max Friction Force: {max_friction:.2f} N → μ_max = {mu_max:.4f}")
     print(f"Static Friction (first): {static_friction:.2f} N → μ_static = {mu_static:.4f}")
 
-mass=50
+mass=15
 g = 9.81
-texture="weight"
+texture="GFoam"
 file_to_write="C:/Users/dexte/Documents/GitHub/3D-textures/Friction/data/recordings_"+str(texture)+"_"+str(mass)+".csv"
 
+#run the trials
 data1,times1=run_trial()
 data2,times2=run_trial()
 data3,times3=run_trial()
 
+#save the trials
 with open(file_to_write, mode='w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(['Trial 1 Timestamp', 'Trial 1 Force','Trial 2 Timestamp', 'Trial 3 Force','Trial 3 Timestamp', 'Trial 3 Force'])  # 
+    writer.writerow(['Trial 1 Timestamp', 'Trial 1 Force','Trial 2 Timestamp', 'Trial 2 Force','Trial 3 Timestamp', 'Trial 3 Force'])  # 
     rows=zip(times1,data1,times2,data2,times3,data3)
     writer.writerows(rows)

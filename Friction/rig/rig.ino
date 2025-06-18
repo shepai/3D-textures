@@ -27,7 +27,7 @@ void setup() {
   // Tare (zero the scale)
   //scale.set_scale();  // No calibration yet
   scale.tare();       // Reset scale to 0
-  scale.set_scale(-17694.08/50); //the reading devided by the grams
+  scale.set_scale(-64991.41/50); //the reading devided by the grams
   //Serial.println("Tare complete. Place a known weight for calibration.");
   
 }
@@ -51,7 +51,7 @@ void loop() {
       stepMotor(false);
       
     }else if (c == 'r') {
-      Serial.println(scale.get_units(5));
+      Serial.println(scale.get_units(10));
     }
   }
   delay(5);
