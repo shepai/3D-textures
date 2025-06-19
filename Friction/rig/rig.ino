@@ -54,7 +54,7 @@ void loop() {
       Serial.println(scale.get_units(10));
     }
   }
-  delay(5);
+  
 
 
 }

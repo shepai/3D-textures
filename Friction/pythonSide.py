@@ -32,7 +32,7 @@ def run_trial():
     print("Recording...")
     for i in range(35):
         ser.write(b's')
-        time.sleep(0.5)
+        time.sleep(2)
         data=get_reading()
         force_readings.append(data)
         time_stamps.append(time.time()-t)
@@ -57,9 +57,9 @@ def process_data(force_readings):
     print(f"Max Friction Force: {max_friction:.2f} N → μ_max = {mu_max:.4f}")
     print(f"Static Friction (first): {static_friction:.2f} N → μ_static = {mu_static:.4f}")
 
-mass=10
+mass=40+100
 g = 9.81
-texture="EFoam"
+texture="cork"
 file_to_write="C:/Users/dexte/Documents/GitHub/3D-textures/Friction/data/recordings_"+str(texture)+"_"+str(mass)+".csv"
 
 #run the trials
