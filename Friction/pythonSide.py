@@ -57,9 +57,9 @@ def process_data(force_readings):
     print(f"Max Friction Force: {max_friction:.2f} N → μ_max = {mu_max:.4f}")
     print(f"Static Friction (first): {static_friction:.2f} N → μ_static = {mu_static:.4f}")
 
-mass=40+100
+mass=7+100
 g = 9.81
-texture="cork"
+texture="laced"
 file_to_write="C:/Users/dexte/Documents/GitHub/3D-textures/Friction/data/recordings_"+str(texture)+"_"+str(mass)+".csv"
 
 #run the trials
