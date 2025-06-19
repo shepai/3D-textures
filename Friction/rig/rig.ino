@@ -51,7 +51,7 @@ void loop() {
       stepMotor(false);
       
     }else if (c == 'r') {
-      Serial.println(scale.get_units(10));
+      Serial.println(scale.get_units(2));
     }
   }
   
