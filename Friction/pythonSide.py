@@ -3,7 +3,7 @@ import keyboard  # pip install keyboard
 import time
 import csv
 import numpy as np
-ser = serial.Serial('COM6', 921600, timeout=1)  # Adjust to your Arduino port
+ser = serial.Serial('COM3', 921600, timeout=1)  # Adjust to your Arduino port
 
 def get_reading(timeout=0.5):
     start = time.time()
@@ -21,10 +21,10 @@ def get_reading(timeout=0.5):
 def run_trial():
     t=time.time()
     force_readings=[]
-    for i in range(35): #push forward to reset 
+    for i in range(36): #push forward to reset 
         ser.write(b'w')
         #data=get_reading()
-        time.sleep(0.5)
+        time.sleep(1)
     print("Ready...")
     input(">")
     forces=[]
@@ -32,7 +32,7 @@ def run_trial():
     print("Recording...")
     for i in range(35):
         ser.write(b's')
-        time.sleep(2)
+        time.sleep(1)
         data=get_reading()
         force_readings.append(data)
         time_stamps.append(time.time()-t)
@@ -57,10 +57,10 @@ def process_data(force_readings):
     print(f"Max Friction Force: {max_friction:.2f} N → μ_max = {mu_max:.4f}")
     print(f"Static Friction (first): {static_friction:.2f} N → μ_static = {mu_static:.4f}")
 
-mass=7+100
+mass=5+111
 g = 9.81
-texture="laced"
-file_to_write="C:/Users/dexte/Documents/GitHub/3D-textures/Friction/data/recordings_"+str(texture)+"_"+str(mass)+".csv"
+texture="z5_ender_PLAminus"
+file_to_write="C:/Users/dexte/Documents/GitHub/3D-textures/Friction/data/3dprinted/recordings_"+str(texture)+"_"+str(mass)+".csv"
 
 #run the trials
 data1,times1=run_trial()
