@@ -2,8 +2,8 @@ import numpy as np
 import trimesh
 from scipy.spatial import Delaunay
 # Create meshgrid
-x_vals = np.arange(0, 6 * np.pi +0.5, 0.1)
-y_vals = np.arange(0, 6 * np.pi + 1.2, 0.1)
+x_vals = np.arange(0, 6 * np.pi +10.5, 0.1)
+y_vals = np.arange(0, 6 * np.pi + 11.2, 0.1)
 x, y = np.meshgrid(x_vals, y_vals)
 
 # z1
@@ -57,7 +57,60 @@ for ii in range(1, N + 1, 2):
     f1 = f2 = ii
     phi = 0
     z6 += A1 * np.sin(f1 * x) + A2 * np.sin(f2 * y + phi)
-zs=[z1,z2,z3,z4,z5,z6]
+
+# z8: Rippling Waves (Multi-frequency diagonal interference)
+z8 = np.sin(x + y) + 0.5 * np.cos(2 * x - 2 * y)
+
+# z9: Concentric Rings / Ripples (Seamlessly tiled using periodic trig inputs)
+z9 = np.sin(np.sqrt(np.sin(x)**2 + np.cos(y)**2) * np.pi)
+
+# z10: Diamond Grid (Absolute values of orthogonal waves)
+z10 = np.abs(np.sin(x)) + np.abs(np.cos(y))
+
+# z11: Woven Fabric / Basketweave (Phase shifted alternating blocks)
+z11 = np.sin(x) * np.sin(y) + 0.3 * np.cos(3 * x) * np.cos(3 * y)
+
+# z12: Hexagonal Tiling Approximation
+z12 = np.cos(x) + np.cos(0.5 * x + np.sqrt(3)/2 * y) + np.cos(0.5 * x - np.sqrt(3)/2 * y)
+# Note: To tile seamlessly, the Y range for hex must technically be scaled by sqrt(3), 
+# but inside this 2pi domain it behaves as a beautiful modulated continuous mesh.
+
+# z13: Sharp Ridges (Simulated volcanic or crystalline ridges)
+z13 = 1.0 - np.abs(np.sin(x) * np.cos(y))
+
+# z14: Chipped Rock / Voronoi-like facets (Using maximum intensity fields)
+z14 = np.maximum(np.sin(x), np.cos(y)) + 0.5 * np.minimum(np.sin(2*x), np.cos(2*y))
+
+# z15: Sand Dunes (Asymmetrical waves using exponentiation)
+z15 = np.exp(np.sin(x)) * np.cos(y)
+
+# z16: Cellular Dimples (Inverted egg-crate with a power curve for flat high plateaus)
+z16 = -(np.sin(x/2)**2 * np.cos(y/2)**2)**0.5
+
+# z17: Fish Scales / Scallops (Warped coordinate shifting)
+z17 = np.sin(x + np.sin(y)) * np.cos(y)
+
+# z18: Knurled Metal / Industrial Grip (Sharp diamond intersections)
+z18 = np.arcsin(np.sin(x) * np.cos(y))
+
+# z19: Swirling Fluid (Domain twisting via periodic cross-modulation)
+z19 = np.sin(x + np.cos(y)) + np.cos(y + np.sin(x))
+
+# z20: Chevron / Zig-Zag (Trigonometric triangle wave transformation)
+z20 = np.arccos(np.cos(x + np.arcsin(np.sin(y))))
+
+# z21: Organic Coral / Perlin-like Fourier synthesis (Layered octaves)
+z21 = (np.sin(1*x) * np.cos(1*y) + 
+       0.5 * np.sin(2*x + np.pi/4) * np.cos(2*y) + 
+       0.25 * np.sin(4*x) * np.sin(4*y))
+
+
+zs = [
+    z1, z2, z3, z4, z5, z6, z8, z9, z10, z11, z12,
+    z13, z14, z15, z16, z17, z18,
+    z19, z20
+]
+
 
 
 def surface_to_stl(x, y, z, filename='output.stl', height_offset=0):
@@ -139,4 +192,4 @@ def export_surface_to_solid_block(x, y, z, filename="solid_block.stl", thickness
 
 if __name__=="__main__":
     for i,_ in enumerate(zs):
-        export_surface_to_solid_block(x, y, _, filename='C:/Users/dexte/Documents/GitHub/3D-textures/Generator/objects/z'+str(i)+'_surface.stl')
+        export_surface_to_solid_block(x, y, _, filename='objects/z'+str(i)+'_surface.stl')
