@@ -52,7 +52,7 @@ def align(file_path1, file_path2):
         # Natural close start position means initial guess is an Identity Matrix
         current_transformation = np.identity(4)
 
-        print(f"\nRunning ICP alignment between:\n  1: {file_path1}\n  2: {file_path2}")
+        #print(f"\nRunning ICP alignment between:\n  1: {file_path1}\n  2: {file_path2}")
         for i, stage in enumerate(stages):
             s_obj1 = obj1.voxel_down_sample(stage["voxel"])
             s_obj2 = obj2.voxel_down_sample(stage["voxel"])
@@ -67,7 +67,7 @@ def align(file_path1, file_path2):
             )
             current_transformation = result.transformation
 
-        print("Alignment Complete.")
+        #print("Alignment Complete.")
         
         # Apply alignment matrix to original full-resolution source cloud (obj2)
         obj2.transform(current_transformation)
@@ -77,7 +77,7 @@ def align(file_path1, file_path2):
         obj2.paint_uniform_color([0, 1, 0])  # Green (Aligned source)
 
         # Visualise
-        print("Opening 3D viewer window...")
+        #print("Opening 3D viewer window...")
         #o3d.visualization.draw_geometries([obj1, obj2])
         
         return obj1,obj2

@@ -8,7 +8,7 @@ from process_3d_files import * # Adjust this import to your actual file/function
 # ==========================
 # SETTINGS
 # ==========================
-SOURCE_FOLDER = r"C:/Users/dexte/Documents/data/processed_models"
+SOURCE_FOLDER = r"/home/dexter/Documents/data/processed_models"
 
 # Regex to parse: A1B2.ply
 FILE_PATTERN = re.compile(r"^([A-Za-z])(\d+)([A-Za-z])(\d+)\.ply$", re.IGNORECASE)
@@ -42,7 +42,7 @@ for root, dirs, files in os.walk(SOURCE_FOLDER):
                     target_dict[group_key] = {}
                 if test_key not in target_dict[group_key]:
                     target_dict[group_key][test_key] = []
-                    
+
                 target_dict[group_key][test_key].append((int(test_num), full_path))
 
 # ==============================================================================
@@ -50,39 +50,36 @@ for root, dirs, files in os.walk(SOURCE_FOLDER):
 # ==============================================================================
 print("\n--- Calculating Baseline Method Errors (From Standards Folders) ---")
 # { texture: [list of distances found on identical blocks] }
-texture_baseline_distances = {}
+method_errors = {}
 
 for (printer, texture), tests in standards_data.items():
-    for test_key, file_list in tests.items():
-        file_list.sort(key=lambda x: x[0])
-        
-        if len(file_list) < 2:
-            continue
-            
-        for i in range(len(file_list) - 1):
-            _, path1 = file_list[i]
-            _, path2 = file_list[i+1]
-            
-            try:
-                # Align the two scans of the same standard block
-                target_pcd, aligned_src_pcd = align(path1, path2)
-                avg_dist, _ = calc(target_pcd, aligned_src_pcd)
-                
-                if texture not in texture_baseline_distances:
-                    texture_baseline_distances[texture] = []
-                texture_baseline_distances[texture].append(avg_dist)
-                
-            except Exception as e:
-                print(f"Failed to process standard pair: {e}")
+    key = (printer)
+    for print_no, scans in tests.items():
 
-# Compile the method errors per texture (mean variation of the system)
-method_errors = {}
-print("\n[Method Error Profiles Calculated]:")
-for texture, dist_list in texture_baseline_distances.items():
-    method_errors[texture] = np.mean(dist_list)
-    print(f"  Texture {texture} baseline system error: {method_errors[texture]:.6f}m")
+        scans.sort(key=lambda x: x[0])
 
+        distances = []
 
+        for i in range(len(scans) - 1):
+
+            _, p1 = scans[i]
+            _, p2 = scans[i + 1]
+
+            target, aligned = align(p1, p2)
+            avg_dist, _ = calc(target, aligned)
+
+            distances.append((avg_dist))
+
+        if distances:
+            method_errors[key] = method_errors.get(key, [])
+            method_errors[key].append(np.mean(distances))
+
+print("/////////////////////////")
+std_error={}
+for key in method_errors:
+    std_error[key]=np.std(method_errors[key])
+    method_errors[key] = np.mean(method_errors[key])
+    
 # ==============================================================================
 # STEP 3: RUN EXPERIMENTAL ALIGNMENT & SUBTRACT METHOD ERROR
 # ==============================================================================
@@ -92,8 +89,8 @@ results_list = []
 for (printer, texture), tests in experimental_data.items():
     # Fetch the custom method error calculated for this specific texture profile
     # Defaults to 0.0 if no standards files existed for this texture pattern
-    current_method_error = method_errors.get(texture, 0.0)
-    
+    current_method_error = method_errors.get((printer), 0.0)
+    current_method_std=std_error.get((printer), 0.0)
     for test_key, file_list in tests.items():
         file_list.sort(key=lambda x: x[0])
         
@@ -113,7 +110,7 @@ for (printer, texture), tests in experimental_data.items():
                 avg_dist, std_dev = calc(target_pcd, aligned_src_pcd)
                 
                 # --- CALCULATE EXPERIMENTAL METRIC MINUS SYSTEM METHOD ERROR ---
-                corrected_distance = avg_dist - current_method_error
+                corrected_distance = (avg_dist) - current_method_error
                 
                 results_list.append({
                     "Printer": printer,
@@ -123,6 +120,7 @@ for (printer, texture), tests in experimental_data.items():
                     "Raw_Avg_Distance": avg_dist,
                     "Std_Deviation": std_dev,
                     "Texture_Method_Error": current_method_error,
+                    "Method_std_Error":current_method_std,
                     "Corrected_Distance": corrected_distance
                 })
                 
@@ -132,6 +130,7 @@ for (printer, texture), tests in experimental_data.items():
 # ==============================================================================
 # STEP 4: BUILD PANDAS DATAFRAME
 # ==============================================================================
+
 df = pd.DataFrame(results_list)
 
 print("\n--- Complete Processing Complete! Data Summary Table ---")
@@ -141,7 +140,7 @@ if not df.empty:
     print(df.to_string(index=False))
     
     # Save output to disk
-    df.to_csv("experimental_corrected_results.csv", index=False)
+    df.to_csv("/home/dexter/Documents/GitHub/3D-textures/assets/experimental_corrected_results.csv", index=False)
     print("\nSaved output table successfully to 'experimental_corrected_results.csv'")
 else:
     print("No matching experimental pairs were compiled.")
@@ -159,6 +158,7 @@ if not df_raw.empty:
         "Raw_Avg_Distance": "mean",
         "Std_Deviation": "mean",
         "Texture_Method_Error": "first",  # Method error is constant per texture
+        "Method_std_Error": "first",          # or "mean"
         "Corrected_Distance": "mean"
     }).reset_index()
 
@@ -169,6 +169,7 @@ if not df_raw.empty:
         "AVERAGE_RAW_DIST", 
         "STD_ERROR", 
         "METHOD_ERROR", 
+        "METHOD_ERROR_STD",
         "CORRECTED_DIST"
     ]
 
@@ -181,7 +182,7 @@ if not df_raw.empty:
     print(df_grouped.to_string(index=False))
     
     # Save the aggregated table to disk
-    df_grouped.to_csv("printer_texture_summary.csv", index=False)
+    df_grouped.to_csv("/home/dexter/Documents/GitHub/3D-textures/assets/printer_texture_summary.csv", index=False)
     print("\nSaved aggregated table successfully to 'printer_texture_summary.csv'")
 else:
     print("No matching experimental pairs were compiled. Cannot generate summary table.")
