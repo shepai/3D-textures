@@ -56,16 +56,101 @@ Under the `/Generator` folder, you will find scripts to create texture blocks fr
 
 If you prefer not to generate them yourself, you can use the pre-compiled models provided directly in the `/objects` folder.
 
+
 ---
 
 ## Data & Experiments
 
+### 1. Printer Outline
+<table>
+  <thead>
+    <tr>
+      <th>Spec</th>
+      <th>Ender-3</th>
+      <th>Creality Ender-3 V3 SE</th>
+      <th>Bambu P1P</th>
+      <th>Formlabs Form 3 (Resin)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Build volume</td>
+      <td>220 × 220 × 250 mm</td>
+      <td>220 × 220 × 250 mm</td>
+      <td>256 × 256 × 256 mm</td>
+      <td>145 × 145 × 185 mm</td>
+    </tr>
+    <tr>
+      <td>Motion system</td>
+      <td>Cartesian bed slingers</td>
+      <td>Cartesian bed slingers</td>
+      <td>CoreXY</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Acceleration</td>
+      <td>≤ 20,000 mm/s²</td>
+      <td>≈ 2,500 mm/s²</td>
+      <td>20,000 mm/s²</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Hotend temp</td>
+      <td>Up to 300°C</td>
+      <td>Up to 260°C</td>
+      <td>Up to 300°C</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Bed temp</td>
+      <td>≤ 100°C</td>
+      <td>≤ 100°C</td>
+      <td>≤ 100°C</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Extruder</td>
+      <td>Direct drive</td>
+      <td>Sprite direct drive</td>
+      <td>Direct drive, all-metal</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Extruder aperture</td>
+      <td>0.4 mm</td>
+      <td>0.4 mm</td>
+      <td>0.4 mm</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Leveling</td>
+      <td>Auto (varies by model)</td>
+      <td>CR Touch + strain</td>
+      <td>Auto (built-in)</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Connectivity</td>
+      <td>Touchscreen, SD/USB</td>
+      <td>Touchscreen, SD/USB-C</td>
+      <td>App, cloud, slicer</td>
+      <td>USB</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>Table:</strong> Comparison of Ender-3, Creality Ender-3 V3 SE,
+  Bambu Lab P1P printers, and the Formlabs Form 3 resin printer. The printers
+  all used 0.4 mm nozzles, although this can be reduced further.
+</p> 
+
 We evaluate the interplay between physical manufacturing quality and algorithmic classification. 
 
-### 1. Tactile Sensor Validation
+### 2. Tactile Sensor Validation
 We collect data using a **TacTip** tactile sensor to investigate how different hardware setups (filaments, nozzle profiles, printer brands) introduce surface artifacts and how those variations alter the classifier's performance.
 
-### 2. Open Datasets
+### 3. Open Datasets
 The datasets associated with this research are openly hosted across the following platforms:
 * **Tactile Readings Dataset:** Access the sensor log matrices directly on [Kaggle](https://www.kaggle.com/datasets/dextershepherd/3d-printed-tactile-dataset-tactip-readings).
 * **3D Printable Models Archive:** The exact generated benchmark STL shapes can be alternative-sourced or cited via [Sussex Figshare](https://doi.org/10.25377/sussex.30256453).
