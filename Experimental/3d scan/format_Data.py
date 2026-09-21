@@ -117,9 +117,6 @@ for (printer, texture), tests in experimental_data.items():
                             "Comparison": f"{num1} vs {num2}",
                             "Raw_Avg_Distance": avg_dist,
                             "Std_Deviation": std_dev,
-                            "Texture_Method_Error": current_method_error,
-                            "Method_std_Error":current_method_std,
-                            "Corrected_Distance": corrected_distance
                         })
                         
                     except Exception as e:
@@ -158,9 +155,6 @@ if not df_raw.empty:
     df_grouped = df_raw.groupby(["Printer", "Texture"]).agg({
         "Raw_Avg_Distance": "mean",
         "Std_Deviation": "mean",
-        "Texture_Method_Error": "first",  # Method error is constant per texture
-        "Method_std_Error": "first",          # or "mean"
-        "Corrected_Distance": "mean"
     }).reset_index()
 
     # Rename columns to match your exact requested format
@@ -169,9 +163,6 @@ if not df_raw.empty:
         "TEXTURE", 
         "AVERAGE_RAW_DIST", 
         "STD_ERROR", 
-        "METHOD_ERROR", 
-        "METHOD_ERROR_STD",
-        "CORRECTED_DIST"
     ]
 
     # Configure Pandas display format for scannability
