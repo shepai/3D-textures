@@ -14,6 +14,60 @@ RADIUS = 0.04
 # ==========================
 # Alignment Function
 # ==========================
+def croppoints(FILEPATH):
+    pcd = o3d.io.read_point_cloud(FILEPATH)
+
+    points = np.asarray(pcd.points)
+
+    # -----------------------------
+    # 1. Find largest cluster
+    # -----------------------------
+    labels = np.array(
+        pcd.cluster_dbscan(
+            eps=0.01,
+            min_points=20,
+            print_progress=True
+        )
+    )
+
+    valid = labels >= 0
+    cluster_ids, counts = np.unique(labels[valid], return_counts=True)
+    largest_cluster = cluster_ids[np.argmax(counts)]
+
+    cluster_mask = labels == largest_cluster
+    cluster_points = points[cluster_mask]
+
+    # Centre of largest cluster
+    centre = cluster_points.mean(axis=0)
+
+    # -----------------------------
+    # 2. Crop to 10 cm radius
+    # -----------------------------
+    radius = 0.04  # 10 cm, assuming metres
+
+    distances = np.linalg.norm(points - centre, axis=1)
+    radius_mask = distances <= radius
+
+    # -----------------------------
+    # 3. Remove points below Z threshold
+    # -----------------------------
+    z_threshold = centre[2] + 0.001  # 2 cm above z=0
+
+    z_mask = points[:, 2] >= z_threshold
+
+    # Combine both conditions
+    final_mask = radius_mask 
+
+    cropped = pcd.select_by_index(np.where(final_mask)[0])
+
+    # -----------------------------
+    # 4. Save
+    # -----------------------------
+    o3d.io.write_point_cloud(FILEPATH, cropped)
+
+    print("Centre:", centre)
+    print("Z threshold:", z_threshold)
+    print("Remaining points:", len(cropped.points))
 
 def align(file_path1, file_path2):
     """Load two point clouds, remove floors, align using Point-to-Point ICP, and visualise."""
