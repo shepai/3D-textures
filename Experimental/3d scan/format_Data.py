@@ -47,6 +47,7 @@ for root, dirs, files in os.walk(SOURCE_FOLDER):
 # ==============================================================================
 # STEP 2: CALCULATE SYSTEM METRIC ERRORS (STANDARDS)
 # ==============================================================================
+print(experimental_data[("R","2")])
 print("\n--- Calculating Baseline Method Errors (From Standards Folders) ---")
 # { texture: [list of distances found on identical blocks] }
 method_errors = {}

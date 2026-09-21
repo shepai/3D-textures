@@ -200,8 +200,15 @@ def process_ply(input_file, output_file):
         print(f"Failed: {input_file}")
         print(e)
 if __name__=="__main__":
-    texture=np.random.randint(1,5)
-    obj1,obj2=align("C:/Users/dexte/Documents/data/processed_models/RESIN/R"+str(texture)+"T1.ply",
-                    "C:/Users/dexte/Documents/data/processed_models/RESIN/R"+str(texture)+"T2.ply")
+    texture=np.random.randint(1,7)
+    printer="RESIN"
+    path1 = f"/home/dexter/Documents/data/processed_models/{printer}/{printer[0]}{texture}T1.ply"
+    path2 = f"/home/dexter/Documents/data/processed_models/{printer}/{printer[0]}{texture}T2.ply"
+
+    print(path1)
+    print(path2)
+    print("Exists:", os.path.exists(path1), os.path.exists(path2))
+
+    obj1, obj2 = align(path1, path2)
     av,std=calc(obj1,obj2)
     print("Average:",av,"STD:",std)
