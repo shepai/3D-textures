@@ -1,4 +1,4 @@
-import kagglehub
+#import kagglehub
 import subprocess 
 import os 
 import pandas as pd
@@ -31,21 +31,28 @@ for i,file in enumerate(files):
     print(file,data.shape)
     d=[]
     for image in data: #conversion
-        gray = np.dot(image[..., :3], [0.2989, 0.5870, 0.1140])
-        h=int(image.shape[0]*percentage)
-        w=int(image.shape[1]*percentage)
-        gray = cv2.resize(gray,(w,h),interpolation=cv2.INTER_AREA)
-        d.append(gray)
-    new_row = pd.DataFrame([{
-    'Index': int(idx),
-    'Filament': info[0],
-    'Pattern': info[1],
-    'Printer': info[3],
-    'Pressure': info[2]
-}])
-    dataset = pd.concat([dataset, new_row], ignore_index=True)
-    idx+=1
-    X.append(np.array(d).reshape((1,2,5*5,h,w)))
+        if ".6" not in file:
+            gray = np.dot(image[..., :3], [0.2989, 0.5870, 0.1140])
+            h=int(image.shape[0]*percentage)
+            w=int(image.shape[1]*percentage)
+            gray = cv2.resize(gray,(w,h),interpolation=cv2.INTER_AREA)
+            d.append(gray)
+        else:
+            print(file,"not using texture")
+    
+    try:
+        X.append(np.array(d).reshape((1,2,5*5,h,w)))
+        new_row = pd.DataFrame([{
+            'Index': int(idx),
+            'Filament': info[0],
+            'Pattern': info[1],
+            'Printer': info[3],
+            'Pressure': info[2]
+        }])
+        dataset = pd.concat([dataset, new_row], ignore_index=True)
+        idx+=1
+    except:
+        pass
 
 dataset.head()
 X=np.array(X).reshape(len(X),2,25,h,w)

@@ -29,7 +29,7 @@ for root, dirs, files in os.walk(SOURCE_FOLDER):
     for file in files:
         if file.lower().endswith(".ply"):
             match = FILE_PATTERN.match(file)
-            if match:
+            if match and "T6" not in file:
                 printer, texture, test_type, test_num = match.groups()
                 group_key = (printer.upper(), texture)
                 test_key = test_type.upper()
