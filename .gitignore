@@ -1,3 +1,8 @@
 
 /Experimental/data/gel
 /Experimental/3d scan/__pycache__
+
+.continue
+/processed_models
+
+**__pycache__**
