@@ -140,14 +140,45 @@ def align(file_path1, file_path2):
         print(f"Alignment execution failed: {e}")
         return None
 
-#similar to above function but instead 
-def align_ply_objects(obj1, obj2, rm_floor=False):
+
+
+def scale_pcd_to_reference(ref_pcd, to_scale_pcd):
+    """
+    Calculates the scale factor based on the bounding box 
+    dimensions and scales the input point cloud to match the reference.
+    """
+    # Get bounding boxes using the correct Open3D method
+    ref_bbox = ref_pcd.get_axis_aligned_bounding_box() 
+    input_bbox = to_scale_pcd.get_axis_aligned_bounding_box()
+    
+    # Get the extent (width, height, depth)
+    ref_dims = ref_bbox.get_extent()
+    input_dims = input_bbox.get_extent()
+    
+    # Calculate scale factor based on the average of the ratios 
+    # of the dimensions (or use the largest dimension to avoid 1D collapse)
+    ratios = [ref_dims[i] / input_dims[i] for i in range(3)]
+    
+    # We use the median ratio to ignore any single axis that might be 
+    # compressed/squashed in the scan
+    scale_factor = np.median(ratios)
+    
+    print(f"Detected Scale Factor: {scale_factor:.4f}x")
+    
+    # Apply scaling to the input
+    # We scale relative to the center of the point cloud
+    to_scale_pcd.scale(scale_factor, center=to_scale_pcd.get_center())
+    
+    return to_scale_pcd
+    
+#similar to align() function but uses pcd objects directly
+def align_ply_objects(obj1, obj2, rm_floor=False, scale=False):
     """
     Aligns two existing PointCloud objects using Point-to-Point ICP.
     
     Args:
-        obj1 (o3d.geometry.PointCloud): The reference point cloud (Target).
-        obj2 (o3d.geometry.PointCloud): The source point cloud (Scan).
+        obj1 (o3d.geometry.PointCloud): Point cloud 1.
+        obj2 (o3d.geometry.PointCloud): Point cloud 2.
         rm_floor (bool): Whether to run the floor removal logic on both objects.
             Defaults to False.
 
@@ -168,6 +199,11 @@ def align_ply_objects(obj1, obj2, rm_floor=False):
         if rm_floor:
             obj1 = remove_floor(obj1)
             obj2 = remove_floor(obj2)
+
+        #scale objects to each other if requested
+        #scale obj2 to the scale of object 1
+        if scale:
+            obj2 = scale_pcd_to_reference(obj1, obj2)
 
         # Base downsample settings
         voxel_size = 0.005
@@ -208,8 +244,6 @@ def align_ply_objects(obj1, obj2, rm_floor=False):
     except Exception as e:
         print(f"Alignment execution failed: {e}")
         return None
-
-# ... rest of code ...
 
 def calc(obj1, obj2):
     """
