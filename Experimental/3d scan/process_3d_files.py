@@ -195,6 +195,11 @@ def align_ply_objects(obj1, obj2, rm_floor=False, scale=False):
             print(f"Error: One of the objects is empty. Obj1: {len(obj1.points)}, Obj2: {len(obj2.points)}")
             return None
 
+        # --- CENTERING STEP ---
+        # This eliminates the "shift" by moving both centers to (0,0,0)
+        obj1 = obj1.get_center()
+        obj2 = obj2.get_center()
+
         # Clean floor elements if requested
         if rm_floor:
             obj1 = remove_floor(obj1)

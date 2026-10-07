@@ -35,21 +35,3 @@ Achieving high-fidelity alignment between the "Source" (the scan) and the "Targe
 **[Previous Phase] Logic & Strategy Definition**
 *   The "Surface vs. Surface" Pivot: Corrected the logic to ensure we aren't comparing a solid block STL to a surface scan, which would produce false-positive thickness errors.
 *   Identified 50x scale discrepancy between RealSense point clouds and CAD models.
-
-## 🚀 Next Steps
-
-**1. ICP Parameter Tuning**
-*   Experiment with wider `thresh` values for the "Loose" gate (e.g., 0.080 or 0.100) to determine if the camera's physical distance from the object is preventing the initial "grab."
-*   Iteratively shrink the "Tight" gate to see the point of failure for sub-millimeter precision.
-
-**2. Global Registration Research**
-*   If the camera angle remains too varied, investigate **Global Registration** (like FPFH features) to find a better "Initial Guess" than `np.identity(4)`.
-
-**3. Validation of Metrics**
-*   Once visual alignment is achieved, cross-reference the `avg` and `std` values with the known 3D printer layer height (e.g., 0.2mm) to ensure the math is interpreting the "ripples" correctly.
-
-**4. Unit Consistency Check**
-*   Verify if a 1000x difference exists between the STL units and RealSense output, and standardize the pipeline to a single unit (mm) at the start of the process.
-
-**5. Rework align function**
-*   Test difference approaches for aligning.
