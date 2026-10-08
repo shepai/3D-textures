@@ -2,7 +2,7 @@
 **Overall Goal:** To develop a robust pipeline that compares 3D scans (PLY/Point Clouds) against CAD templates (STL) to quantify physical manufacturing deviations.
 
 **Current Priority:** 
-Achieving high-fidelity alignment between the "Source" (the scan) and the "Target" (the STL). We are currently tuning the multi-stage ICP parameters to ensure that the scan "snaps" perfectly onto the reference model, ensuring that the resulting `avg` and `std` metrics accurately reflect surface texture/printing errors rather than orientation or scale offsets.
+Automated Batch Processing & Metadata Aggregation. We have moved from individual file analysis to a global loop that processes all folders within the project structure. The focus is now on ensuring accurate metadata extraction (Printer type, "Standards" status, Texture Index, Test Number) and aggregating results into a structured Pandas DataFrame for high-level analysis.
 
 ## 🧠 Knowledge Base & Conventions
 *   **Branch Context:** We are working in a dedicated branch for the Scan-to-CAD comparison engine.
@@ -15,11 +15,18 @@ Achieving high-fidelity alignment between the "Source" (the scan) and the "Targe
     *   *Medium Gate:* Refines the general position.
     *   *Tight Gate:* Sub-millimeter lock-in for high-precision surface matching.
 *   **Data Handling:** We prioritize "Surface vs. Surface" comparison. We ignore the "solid" thickness of the STL to focus on the printed surface geometry.
+*   **Naming Conventions & Metadata:**
+    *   **Files:** Named as `[Printer][Texture]T[TestNo].ply` (e.g., `B1T2.ply` $\rightarrow$ Texture 1, Test 2).
+    *   **Folder Structure:** `processed_models/[Printer]` or `processed_models/[Printer] STANDARDS`.
+    *   **Extraction Logic:** The system dynamically maps `z_data` from the generator using the texture index from the filename and automatically flags "Standards" folders as boolean values.
 
 ## 📅 Progress Log
 
-**[Current Phase] Alignment Calibration & Debugging**
-*   Identified that the multi-stage ICP "gates" need fine-tuning; currently investigating if the "Loose" search threshold is wide enough to overcome large rotation/translation offsets from the camera.
+**[Current Phase] Batch Processing & Automated Evaluation**
+*   Implemented a global iteration script to process all subfolders in `SCANS_LOC`.
+*   Developed a dynamic mapping system using `getattr` to fetch the correct `z_data` for STL generation based on filename characters.
+*   Implemented automated Quality Control (QC): Results are automatically flagged as `aligned` if the average deviation is below a defined threshold (currently 1.2mm).
+*   Created a structured `results_df` capturing filename, printer, standards flag, texture, test number, avg_dist, std_dist, and alignment status.
 
 **[Previous Phase] Scaling & Registration Engine**
 *   Implemented `scale_pcd_to_reference`: Added logic to calculate a dynamic scale factor by comparing bounding box dimensions (Width, Height, Depth).
