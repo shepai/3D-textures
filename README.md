@@ -168,6 +168,13 @@ To augment the geometric and visual data, the `/Friction` directory contains aut
 If you use these texture generators, datasets, or experimental methodologies in your research, please cite the corresponding work:
 
 ```bibtex
+@article{shepherd20263d,
+  title={A 3D-Printable Dataset for Fair Testing and Comparisons of Tactile Sensors},
+  author={Shepherd, Dexter R and Herzig, Nicolas and Husbands, Phil and Philippides, Andrew and Johnson, Chris and Kimbell, William},
+  journal={arXiv preprint arXiv:2606.25886},
+  year={2026}
+}
+
 @misc{shepherd2025tactile,
   author    = {Shepherd, Dexter and Herzig, Nicolas and Philippides, Andy and Husbands, Phil and Johnson, Chris},
   title     = {3D Printable Tactile Dataset},
@@ -177,6 +184,7 @@ If you use these texture generators, datasets, or experimental methodologies in 
   doi       = {10.25377/sussex.30256453},
   url       = {https://doi.org/10.25377/sussex.30256453}
 }
+
 ```
 
 ### Acknowledgments
