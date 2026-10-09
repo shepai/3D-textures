@@ -1,6 +1,7 @@
 import numpy as np
 import trimesh
 from scipy.spatial import Delaunay
+import open3d as o3d
 # Create meshgrid
 x_vals = np.arange(0, 6 * np.pi +10.5, 0.1)
 y_vals = np.arange(0, 6 * np.pi + 11.2, 0.1)
@@ -111,9 +112,21 @@ zs = [
     z19, z20,z21
 ]
 
+def surface_to_stl(x, y, z, filename=None, height_offset=0):
+    """
+    Convert a 2D surface grid into a 3D mesh (STL) file or an Open3D PointCloud.
 
+    Args:
+        filename (str, optional): Path to save the exported STL file. 
+            If None, the function returns a PointCloud object instead.
+        height_offset (float, optional): Constant value to add to the z-coordinates.
+            Defaults to 0.
 
-def surface_to_stl(x, y, z, filename='output.stl', height_offset=0):
+    Returns:
+        None or o3d.geometry.PointCloud: Returns None if saved to file, 
+            otherwise returns the PointCloud object.
+    """
+
     # Flatten the meshgrid and shift z if needed
     vertices = np.column_stack((x.ravel(), y.ravel(), z.ravel() + height_offset))
     
@@ -129,10 +142,21 @@ def surface_to_stl(x, y, z, filename='output.stl', height_offset=0):
     # Convert to numpy arrays
     faces = np.array(faces)
     
-    # Create mesh and export
+    # Create mesh
     mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-    mesh.export(filename)
-    print(f"Exported {filename}")
+    
+    # Only save to file if a filename was actually provided
+    if filename is not None:
+        mesh.export(filename)
+        print(f"Exported {filename}")
+        return None
+    else:
+        # Return the object as an Open3D PointCloud for notebook use
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(vertices)
+        print(f"Returned PointCloud (no file saved)")
+        return pcd
+
 
 def export_surface_to_solid_block(x, y, z, filename="solid_block.stl", thickness=7.0):
     x = np.array(x)

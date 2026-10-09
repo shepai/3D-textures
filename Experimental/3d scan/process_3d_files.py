@@ -69,6 +69,15 @@ def croppoints(FILEPATH):
     print("Z threshold:", z_threshold)
     print("Remaining points:", len(cropped.points))
 
+# helper function to remove floor
+def remove_floor(pcd):
+    plane_model, inliers = pcd.segment_plane(
+        distance_threshold=0.002, 
+        ransac_n=3,
+        num_iterations=5000
+    )
+    return pcd.select_by_index(inliers, invert=True)
+
 def align(file_path1, file_path2):
     """Load two point clouds, remove floors, align using Point-to-Point ICP, and visualise."""
     try:
@@ -79,15 +88,6 @@ def align(file_path1, file_path2):
         if len(pcd1.points) == 0 or len(pcd2.points) == 0:
             print(f"Error: One of the alignment files is empty. PCD1: {len(pcd1.points)}, PCD2: {len(pcd2.points)}")
             return None
-
-        # Inner helper to remove floor
-        def remove_floor(pcd):
-            plane_model, inliers = pcd.segment_plane(
-                distance_threshold=0.002, 
-                ransac_n=3,
-                num_iterations=5000
-            )
-            return pcd.select_by_index(inliers, invert=True)
 
         # Clean floor elements
         obj1 = remove_floor(pcd1)
@@ -141,6 +141,115 @@ def align(file_path1, file_path2):
         return None
 
 
+
+def scale_pcd_to_reference(ref_pcd, to_scale_pcd):
+    """
+    Calculates the scale factor based on the bounding box 
+    dimensions and scales the input point cloud to match the reference.
+    """
+    # Get bounding boxes using the correct Open3D method
+    ref_bbox = ref_pcd.get_axis_aligned_bounding_box() 
+    input_bbox = to_scale_pcd.get_axis_aligned_bounding_box()
+    
+    # Get the extent (width, height, depth)
+    ref_dims = ref_bbox.get_extent()
+    input_dims = input_bbox.get_extent()
+    
+    # Calculate scale factor based on the average of the ratios 
+    # of the dimensions (or use the largest dimension to avoid 1D collapse)
+    ratios = [ref_dims[i] / input_dims[i] for i in range(3)]
+    
+    # We use the median ratio to ignore any single axis that might be 
+    # compressed/squashed in the scan
+    scale_factor = np.median(ratios)
+    
+    print(f"Detected Scale Factor: {scale_factor:.4f}x")
+    
+    # Apply scaling to the input
+    # We scale relative to the center of the point cloud
+    to_scale_pcd.scale(scale_factor, center=to_scale_pcd.get_center())
+    
+    return to_scale_pcd
+    
+#similar to align() function but uses pcd objects directly
+def align_ply_objects(obj1, obj2, rm_floor=False, scale=False):
+    """
+    Aligns two existing PointCloud objects using Point-to-Point ICP.
+    
+    Args:
+        obj1 (o3d.geometry.PointCloud): Point cloud 1.
+        obj2 (o3d.geometry.PointCloud): Point cloud 2.
+        rm_floor (bool): Whether to run the floor removal logic on both objects.
+            Defaults to False.
+
+    Returns:
+        tuple: (obj1, obj2) where obj2 is aligned to obj1, or None if failed.
+    """
+    try:
+        # Check if inputs are valid point clouds
+        if obj1 is None or obj2 is None:
+            print("Error: One or both input objects are None.")
+            return None
+        
+        if len(obj1.points) == 0 or len(obj2.points) == 0:
+            print(f"Error: One of the objects is empty. Obj1: {len(obj1.points)}, Obj2: {len(obj2.points)}")
+            return None
+
+        # --- CENTERING STEP ---
+        # This eliminates the "shift" by moving both centers to (0,0,0)
+        obj1 = obj1.get_center()
+        obj2 = obj2.get_center()
+
+        # Clean floor elements if requested
+        if rm_floor:
+            obj1 = remove_floor(obj1)
+            obj2 = remove_floor(obj2)
+
+        #scale objects to each other if requested
+        #scale obj2 to the scale of object 1
+        if scale:
+            obj2 = scale_pcd_to_reference(obj1, obj2)
+
+        # Base downsample settings
+        voxel_size = 0.005
+
+        # Multi-stage gates: Fix coarse angle tweaks, then clamp down tight.
+        stages = [
+            {"voxel": voxel_size * 2, "thresh": 0.040},  # Loose search gate
+            {"voxel": voxel_size * 1, "thresh": 0.015},  # Medium search gate
+            {"voxel": voxel_size * 0.5, "thresh": 0.004} # Tight sub-millimetre lock
+        ]
+
+        # Natural close start position means initial guess is an Identity Matrix
+        current_transformation = np.identity(4)
+
+        for i, stage in enumerate(stages):
+            s_obj1 = obj1.voxel_down_sample(stage["voxel"])
+            s_obj2 = obj2.voxel_down_sample(stage["voxel"])
+            
+            # PointToPoint avoids plane-sliding or rotation drift on flatter geometries
+            result = o3d.pipelines.registration.registration_icp(
+                source=s_obj2,
+                target=s_obj1,
+                max_correspondence_distance=stage["thresh"],
+                init=current_transformation,
+                estimation_method=o3d.pipelines.registration.TransformationEstimationPointToPoint(False)
+            )
+            current_transformation = result.transformation
+
+        # Apply alignment matrix to original full-resolution source cloud (obj2)
+        obj2.transform(current_transformation)
+
+        # Colorize for explicit visual confirmation
+        obj1.paint_uniform_color([1, 0, 0])  # Red (Target reference)
+        obj2.paint_uniform_color([0, 1, 0])  # Green (Aligned source)
+        
+        return obj1, obj2
+
+    except Exception as e:
+        print(f"Alignment execution failed: {e}")
+        return None
+
 def calc(obj1, obj2):
     """
     Calculates the average distance and standard deviation between 
@@ -169,11 +278,25 @@ def calc(obj1, obj2):
     
     return avg_distance, std_dev
 
-def process_ply(input_file, output_file):
-    """Load, clean, centre and save a point cloud."""
+def process_ply(input_file, output_file=None, rm_floor=False):
+    """Load, clean, centre and save a point cloud.
+
+    Args:
+        input_file (str): Path to the source .ply point cloud file.
+        output_file (str, optional): Path where the processed .ply file should 
+            be saved. If None, the function only returns the processed object.
+
+    Returns:
+        o3d.geometry.PointCloud: The processed Open3D point cloud object, 
+            or None if an error occurs during processing."""
 
     try:
         pcd = o3d.io.read_point_cloud(input_file)
+
+        # Remove the floor if requested
+        if rm_floor == True:
+            # This calls the helper function you moved to the module level
+            pcd = remove_floor(pcd)
 
         points = np.asarray(pcd.points)
 
@@ -244,11 +367,16 @@ def process_ply(input_file, output_file):
         if object_colours is not None:
             output_pcd.colors = o3d.utility.Vector3dVector(object_colours)
 
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        # Only save to file if an output_file path was actually provided
+        if output_file is not None:
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            o3d.io.write_point_cloud(output_file, output_pcd)
+            print(f"Saved to: {output_file}")
+        else:
+            print(f"Processed {input_file} (no file saved)")
 
-        o3d.io.write_point_cloud(output_file, output_pcd)
-
-        print(f"Processed: {input_file}")
+        # Return the object so it can be used in other scripts
+        return output_pcd
 
     except Exception as e:
         print(f"Failed: {input_file}")
