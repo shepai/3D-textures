@@ -9,7 +9,7 @@ Automated Batch Processing & Metadata Aggregation. We have moved from individual
 *   **Color Coding:** 
     *   **Red:** Reference Model (Target/STL)
     *   **Green:** Captured Scan (Source/PLY)
-*   **Coordinate Systems:** Open3D defaults to meters; STL files are often in millimeters. The pipeline must account for these unit discrepancies.
+*   **Coordinate Systems:** Scan point clouds are in mm. STL point clouds are in metres.
 *   **Optimization Strategy:** We use a **"Coarse-to-Fine"** ICP approach.
     *   *Loose Gate:* Broad search to "grab" the object.
     *   *Medium Gate:* Refines the general position.
