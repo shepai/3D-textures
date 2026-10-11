@@ -19,6 +19,11 @@ Automated Batch Processing & Metadata Aggregation. We have moved from individual
     *   **Files:** Named as `[Printer][Texture]T[TestNo].ply` (e.g., `B1T2.ply` $\rightarrow$ Texture 1, Test 2).
     *   **Folder Structure:** `processed_models/[Printer]` or `processed_models/[Printer] STANDARDS`.
     *   **Extraction Logic:** The system dynamically maps `z_data` from the generator using the texture index from the filename and automatically flags "Standards" folders as boolean values.
+*   **File Locations:**
+    *   **Analysis:** `Experimental/scan_comparison/scan_comp_analysis.ipynb`
+    *   **Comparison Engine:** `Experimental/scan_comparison/stl_to_scan_comp.ipynb`
+    *   **Master Results:** `Experimental/scan_comparison/scan_comp_master_results.csv`
+    *   **Final Filtered Results:** `Experimental/scan_comparison/final_comp_result_under1.5.csv`
 
 ## 📅 Progress Log
 
@@ -26,7 +31,11 @@ Automated Batch Processing & Metadata Aggregation. We have moved from individual
 *   Implemented a global iteration script to process all subfolders in `SCANS_LOC`.
 *   Developed a dynamic mapping system using `getattr` to fetch the correct `z_data` for STL generation based on filename characters.
 *   Implemented automated Quality Control (QC): Results are automatically flagged as `aligned` if the average deviation is below a defined threshold (currently 1.2mm).
-*   Created a structured `results_df` capturing filename, printer, standards flag, texture, test number, avg_dist, std_dist, and alignment status.
+*   **Refined Analysis Pipeline:** 
+    *   Implemented a filter to exclude results with `avg_dist > 1.5mm` to remove outliers from high-level stats.
+    *   Grouped results by `printer`, `stl_texture`, and `standards` flag to enable "Standard vs. Non-Standard" comparison.
+    *   Calculated Mean and Standard Error (SE) rounded to 3 decimal places.
+    *   Exporting to `final_comp_result_under1.5.csv`.
 
 **[Previous Phase] Scaling & Registration Engine**
 *   Implemented `scale_pcd_to_reference`: Added logic to calculate a dynamic scale factor by comparing bounding box dimensions (Width, Height, Depth).
